@@ -37,7 +37,7 @@ public class PhotoResult {
 
     private LocalDateTime updateDate;
 
-    @OneToMany(mappedBy = "request", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "result", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<PhotoOrigin> photoUrls = new ArrayList<>();
 
     @Nullable
