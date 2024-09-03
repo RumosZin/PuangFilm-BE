@@ -20,5 +20,5 @@ public class ImageInfo {
 
     List<String> photoOriginUrls;
     Gender gender;
-    Long requestId;
+    Long resultId;
 }

@@ -5,12 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gdsc.cau.puangbe.common.enums.Gender;
 import gdsc.cau.puangbe.common.enums.RequestStatus;
 import gdsc.cau.puangbe.common.exception.BaseException;
-import gdsc.cau.puangbe.common.exception.PhotoRequestException;
-import gdsc.cau.puangbe.common.util.ConstantUtil;
+import gdsc.cau.puangbe.common.exception.PhotoResultException;
 import gdsc.cau.puangbe.common.util.ResponseCode;
-import gdsc.cau.puangbe.photo.entity.PhotoRequest;
 import gdsc.cau.puangbe.photo.entity.PhotoResult;
-import gdsc.cau.puangbe.photo.repository.PhotoRequestRepository;
 import gdsc.cau.puangbe.photo.repository.PhotoResultRepository;
 import gdsc.cau.puangbe.photorequest.dto.CreateImageDto;
 import gdsc.cau.puangbe.photorequest.dto.ImageInfo;
@@ -18,11 +15,9 @@ import gdsc.cau.puangbe.user.entity.User;
 import gdsc.cau.puangbe.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,31 +27,19 @@ import java.util.Objects;
 public class PhotoRequestServiceImpl implements PhotoRequestService {
 
     private final PhotoResultRepository photoResultRepository;
-    private final PhotoRequestRepository photoRequestRepository;
     private final UserRepository userRepository;
-    private final RedisTemplate<String, Long> redisTemplate;
     private final ObjectMapper mapper;
     private final RabbitMqService rabbitMqService;
 
-    //이미지 처리 요청 생성 (RabbitMQ호출)
+    // 이미지 처리 요청 생성 (RabbitMQ호출)
     @Override
     @Transactional
     public Long createImage(CreateImageDto dto, Long userId){
         User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(ResponseCode.USER_NOT_FOUND));
-        // PhotoRequest 생성
-        PhotoRequest request = PhotoRequest.builder()
-                .user(user)
-                .gender(Gender.fromInt(dto.getGender()))
-                .urls(dto.getPhotoOriginUrls())
-                .email(dto.getEmail())
-                .build();
-        photoRequestRepository.save(request);
 
-        // PhotoRequest에 일대일 대응되는 PhotoResult 생성
+        // PhotoResult 생성
         PhotoResult photoResult = PhotoResult.builder()
-                .user(request.getUser())
-                .photoRequest(request)
-                .createDate(LocalDateTime.now())
+                .user(user)
                 .build();
         photoResultRepository.save(photoResult);
         log.info("사용자의 이미지 요청 생성 완료, RabbitMQ에 전송 준비: {}", userId);
@@ -65,25 +48,22 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
             ImageInfo imageInfo = ImageInfo.builder()
                     .photoOriginUrls(dto.getPhotoOriginUrls())
                     .gender(Gender.fromInt(dto.getGender()))
-                    .requestId(request.getId())
+                    .resultId(photoResult.getId())
                     .build();
             String message = mapper.writeValueAsString(imageInfo);
 
-            rabbitMqService.sendMessage(message); // 1. RabbitMQ를 호출해서 message를 큐에 함께 넣어서 파이썬에서 접근할 수 있도록 한다.
+            rabbitMqService.sendMessage(message);
+            // 1. RabbitMQ를 호출해서 message를 큐에 함께 넣어서 파이썬에서 접근할 수 있도록 한다.
             // 2. Redis에 <String keyName, Long requestId> 형식으로 진행되고 있는 request 정보를 저장한다.
             // 3. 추후 사진이 완성된다면 requestId를 통해 request를 찾아서 상태를 바꾸고 1:1 관계인 result에 접근해서 imageUrl를 수정한다.
             // 4. 즉, 파이썬에서 스프링으로 향하는 POST API는 {requestId, imageUrl}이 필수적으로 존재해야 한다.
             log.info("RabbitMQ 전송 완료: {}", message);
         } catch (JsonProcessingException e) {
             log.error("JSON 변환 실패");
-            throw new PhotoRequestException(ResponseCode.JSON_PARSE_ERROR);
+            throw new PhotoResultException(ResponseCode.JSON_PARSE_ERROR);
         }
 
-        // Redis에 userId 저장하고, userId로 requestId 추적할 수 있도록 함
-        redisTemplate.opsForSet().add(ConstantUtil.USER_ID_KEY, userId);
-        redisTemplate.opsForSet().add(userId.toString(), request.getId());
-        log.info("Redis 대기열 등록 완료: {}", userId);
-        return request.getId();
+        return photoResult.getId();
     }
 
     // 유저의 전체 사진 리스트 조회
@@ -101,19 +81,13 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
                 .toList();
     }
 
-    //최근 생성 요청한 이미지의 상태 조회 (추후 boolean 등으로 변환될 수도 있음)
+    // 최근 생성 요청한 이미지의 상태 조회 (추후 boolean 등으로 변환될 수도 있음)
     @Override
     @Transactional(readOnly = true)
     public String getRequestStatus(Long userId){
         validateUser(userId);
 
-        // Redis에 userId가 존재하면 아직 처리 대기 중인 요청이므로 WAITING 반환
-        if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(ConstantUtil.USER_ID_KEY, userId))){
-            log.info("사용자의 요청 상태 조회, 현재 대기 중: {}", userId);
-            return RequestStatus.WAITING.name();
-        }
-
-        RequestStatus status = photoRequestRepository.findTopByUserIdOrderByCreateDateDesc(userId)
+        RequestStatus status = photoResultRepository.findTopByUserIdOrderByCreateDateDesc(userId)
                 .orElseThrow(() -> new BaseException(ResponseCode.PHOTO_REQUEST_NOT_FOUND))
                 .getStatus();
         log.info("사용자의 요청 상태 조회, 현재 상태: {} {}", status.name(), userId);

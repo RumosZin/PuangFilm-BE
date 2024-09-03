@@ -35,25 +35,19 @@ public class PhotoServiceImpl implements PhotoService {
     // 완성된 요청 id 및 imageUrl을 받아 저장
     @Override
     @Transactional
-    public void uploadPhoto(Long photoRequestId, String imageUrl) {
-        PhotoRequest photoRequest = photoRequestRepository.findById(photoRequestId)
+    public void uploadPhoto(Long photoResultId, String imageUrl) {
+        PhotoResult photoResult = photoResultRepository.findById(photoResultId)
                 .orElseThrow(() -> new BaseException(ResponseCode.PHOTO_REQUEST_NOT_FOUND));
-        if (photoRequest.getStatus() == RequestStatus.FINISHED) {
+        if (photoResult.getStatus() == RequestStatus.FINISHED) {
             throw new BaseException(ResponseCode.URL_ALREADY_UPLOADED);
         }
-        User user = photoRequest.getUser();
-        PhotoResult photoResult = getPhotoResult(photoRequestId);
+        User user = photoResult.getUser();
 
-        photoRequest.finishStatus();
-        photoRequestRepository.save(photoRequest);
+        photoResult.finishStatus();
         photoResult.update(imageUrl);
         photoResultRepository.save(photoResult);
+        photoResultRepository.save(photoResult);
         log.info("결과 이미지 URL 업로드 완료: {}", imageUrl);
-
-        // Redis 대기열의 user 정보 삭제
-        redisTemplate.opsForSet().remove(ConstantUtil.USER_ID_KEY, user.getId());
-        redisTemplate.delete(user.getId().toString());
-        log.info("Redis 대기열에서 요청 삭제 : {}", user.getId());
 
         // 이메일 발송
         EmailInfo emailInfo = EmailInfo.builder()
@@ -107,8 +101,8 @@ public class PhotoServiceImpl implements PhotoService {
 
     }
 
-    private PhotoResult getPhotoResult(Long photoRequestId){
-        return photoResultRepository.findByPhotoRequestId(photoRequestId)
+    private PhotoResult getPhotoResult(Long photoResultId){
+        return photoResultRepository.findById(photoResultId)
                 .orElseThrow(() -> new BaseException(ResponseCode.PHOTO_RESULT_NOT_FOUND));
     }
 }
