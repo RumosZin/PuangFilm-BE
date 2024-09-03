@@ -5,10 +5,8 @@ import gdsc.cau.puangbe.common.exception.BaseException;
 import gdsc.cau.puangbe.common.util.ConstantUtil;
 import gdsc.cau.puangbe.common.util.ResponseCode;
 import gdsc.cau.puangbe.photo.dto.request.EmailInfo;
-import gdsc.cau.puangbe.photo.entity.PhotoRequest;
 import gdsc.cau.puangbe.photo.entity.PhotoResult;
 import gdsc.cau.puangbe.photo.repository.PhotoResultRepository;
-import gdsc.cau.puangbe.photo.repository.PhotoRequestRepository;
 import gdsc.cau.puangbe.user.entity.User;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +25,6 @@ import org.thymeleaf.context.Context;
 public class PhotoServiceImpl implements PhotoService {
 
     private final PhotoResultRepository photoResultRepository;
-    private final PhotoRequestRepository photoRequestRepository;
-    private final RedisTemplate<String, Long> redisTemplate;
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
 
@@ -51,7 +47,7 @@ public class PhotoServiceImpl implements PhotoService {
 
         // 이메일 발송
         EmailInfo emailInfo = EmailInfo.builder()
-                .email(photoRequest.getEmail())
+                .email(photoResult.getEmail())
                 .photoUrl(imageUrl)
                 .name(user.getUserName())
                 .framePageUrl("https://www.google.com/") // TODO : 프론트 분들 링크 관련 답변 오면 프레임 페이지 링크 관련 수정

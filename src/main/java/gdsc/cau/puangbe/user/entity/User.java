@@ -1,6 +1,5 @@
 package gdsc.cau.puangbe.user.entity;
 
-import gdsc.cau.puangbe.photo.entity.PhotoRequest;
 import gdsc.cau.puangbe.photo.entity.PhotoResult;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -33,9 +32,6 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<PhotoResult> photoResult = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-    private List<PhotoRequest> photoRequest = new ArrayList<>();
 
     @Builder
     public User(String userName, LocalDateTime createDate, LocalDateTime requestDate, String kakaoId) {
