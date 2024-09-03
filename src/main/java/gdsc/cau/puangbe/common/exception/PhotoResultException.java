@@ -2,9 +2,9 @@ package gdsc.cau.puangbe.common.exception;
 
 import gdsc.cau.puangbe.common.util.ResponseCode;
 
-public class PhotoRequestException extends BaseException {
+public class PhotoResultException extends BaseException {
 
-    public PhotoRequestException(ResponseCode responseCode) {
+    public PhotoResultException(ResponseCode responseCode) {
         super(responseCode);
     }
 }
