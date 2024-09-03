@@ -42,8 +42,10 @@ public class PhotoServiceImpl implements PhotoService {
         photoResult.finishStatus();
         photoResult.update(imageUrl);
         photoResultRepository.save(photoResult);
-        photoResultRepository.save(photoResult);
-        log.info("결과 이미지 URL 업로드 완료: {}", imageUrl);
+
+        // Redis 대기열의 user 정보 삭제
+        redisTemplate.opsForSet().remove(ConstantUtil.USER_ID_KEY, user.getId());
+        redisTemplate.delete(user.getId().toString());
 
         // 이메일 발송
         EmailInfo emailInfo = EmailInfo.builder()
@@ -65,7 +67,6 @@ public class PhotoServiceImpl implements PhotoService {
             throw new BaseException(ResponseCode.IMAGE_ON_PROCESS);
         }
 
-        log.info("결과 이미지 URL 조회 완료: {}", photoResult.getImageUrl());
         return photoResult.getImageUrl();
     }
 
@@ -89,7 +90,7 @@ public class PhotoServiceImpl implements PhotoService {
 
             // 메일 전송
             mailSender.send(mimeMessage);
-            log.info("이메일 전송 완료: {}", emailInfo.getEmail());
+
         } catch (Exception e){
             e.printStackTrace();
             throw new BaseException(ResponseCode.EMAIL_SEND_ERROR);
