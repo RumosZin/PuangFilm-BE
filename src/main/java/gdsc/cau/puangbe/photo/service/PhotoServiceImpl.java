@@ -38,11 +38,14 @@ public class PhotoServiceImpl implements PhotoService {
     @Override
     @Transactional
     public void uploadPhoto(Long photoRequestId, String imageUrl) {
+        // 예외처리
         PhotoRequest photoRequest = photoRequestRepository.findById(photoRequestId)
                 .orElseThrow(() -> new BaseException(ResponseCode.PHOTO_REQUEST_NOT_FOUND));
         if (photoRequest.getStatus() == RequestStatus.FINISHED) {
             throw new BaseException(ResponseCode.URL_ALREADY_UPLOADED);
         }
+
+        // 결과 이미지 업데이트
         User user = photoRequest.getUser();
         PhotoResult photoResult = getPhotoResult(photoRequestId);
 
@@ -52,11 +55,11 @@ public class PhotoServiceImpl implements PhotoService {
         photoResultRepository.save(photoResult);
         log.info("결과 이미지 URL 업로드 완료: {}", imageUrl);
 
-        // 이메일 발송 - 나중에 분리할 것이므로 제외
+        // 이메일 발송
         EmailInfo emailInfo = EmailInfo.builder()
                 .email(photoRequest.getEmail())
                 .photoUrl(imageUrl)
-                .name(user.getUserName()) // 지연 로딩을 사용하기 때문에 여기서 user.getName을 하는 순간에 Hibernate select
+                .name(user.getUserName())
                 .framePageUrl("https://www.google.com/") // TODO : 프론트 분들 링크 관련 답변 오면 프레임 페이지 링크 관련 수정
                 .build();
 
