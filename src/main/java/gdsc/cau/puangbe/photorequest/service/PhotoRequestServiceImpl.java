@@ -120,6 +120,22 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
         return status.name();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Long updateEmail(Long userId, String email) {
+        log.info("이메일 수정 진입");
+        // 가장 최근의 PhotoRequest 조회
+        PhotoRequest photoRequest = photoRequestRepository.findTopByUserIdOrderByCreateDateDesc(userId)
+                .orElseThrow(() -> new BaseException(ResponseCode.PHOTO_REQUEST_NOT_FOUND));
+
+        photoRequest.modifyEmail(email);
+        photoRequestRepository.save(photoRequest);
+
+        log.info("이메일 수정 완료: {}", photoRequest.getEmail());
+
+        return photoRequest.getId();
+    }
+
     // 유저id 유효성 검사
     private void validateUser(Long userId){
         if(!userRepository.existsById(userId)){

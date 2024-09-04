@@ -12,4 +12,7 @@ public interface PhotoRequestService {
 
     //최근 생성 요청한 이미지의 상태 조회
     String getRequestStatus(Long userId);
+
+    // 이미지 처리 요청이 끝나지 않았을 경우 이메일 업데이트
+    Long updateEmail(Long userId, String email);
 }
