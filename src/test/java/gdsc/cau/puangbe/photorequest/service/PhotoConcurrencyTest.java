@@ -63,6 +63,5 @@ public class PhotoConcurrencyTest {
 
         System.out.println("success count: " + successCount.get());
         System.out.println("fail count: " + failCount.get());
-
     }
 }

@@ -122,11 +122,9 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
         return status.name();
     }
 
-    @ExeTimer
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Long updateEmail(Long userId, String email) {
-        log.info("이메일 수정 진입");
         // 가장 최근의 PhotoRequest 조회
         PhotoRequest photoRequest = photoRequestRepository.findTopByUserIdOrderByCreateDateDesc(userId)
                 .orElseThrow(() -> new BaseException(ResponseCode.PHOTO_REQUEST_NOT_FOUND));

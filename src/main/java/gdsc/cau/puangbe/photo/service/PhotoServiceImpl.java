@@ -34,7 +34,6 @@ public class PhotoServiceImpl implements PhotoService {
     private final TemplateEngine templateEngine;
 
     // 완성된 요청 id 및 imageUrl을 받아 저장
-    @ExeTimer
     @Override
     @Transactional
     public void uploadPhoto(Long photoRequestId, String imageUrl) {
