@@ -1,8 +1,6 @@
 package gdsc.cau.puangbe.photorequest.service;
 
-import gdsc.cau.puangbe.photo.service.PhotoService;
 import gdsc.cau.puangbe.photo.service.PhotoServiceImpl;
-import gdsc.cau.puangbe.photorequest.dto.CreateImageDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SpringBootTest
-public class PhotoConcurrencyTeset {
+public class PhotoConcurrencyTest {
 
     @Autowired
     private PhotoServiceImpl photoService;
@@ -25,7 +23,7 @@ public class PhotoConcurrencyTeset {
     void 수정_조회가_동시에_발생하는_경우_테스트() throws InterruptedException {
 
         Long userId = 1000L; // 테스트할 사용자 ID
-        String email = "newEmail@gmail.com"; // 변경할 이메일
+        String email = "newUser998@example.com"; // 변경할 이메일
 
         CountDownLatch latch = new CountDownLatch(2);
         ExecutorService executor = Executors.newFixedThreadPool(2);
