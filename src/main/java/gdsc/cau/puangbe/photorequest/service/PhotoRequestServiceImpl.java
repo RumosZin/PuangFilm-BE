@@ -132,8 +132,6 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
         photoRequest.modifyEmail(email);
         photoRequestRepository.save(photoRequest);
 
-        log.info("이메일 수정 완료: {}", photoRequest.getEmail());
-
         return photoRequest.getId();
     }
 
