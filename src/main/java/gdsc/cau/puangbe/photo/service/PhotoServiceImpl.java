@@ -1,5 +1,6 @@
 package gdsc.cau.puangbe.photo.service;
 
+import gdsc.cau.puangbe.common.annotation.ExeTimer;
 import gdsc.cau.puangbe.common.enums.RequestStatus;
 import gdsc.cau.puangbe.common.exception.BaseException;
 import gdsc.cau.puangbe.common.util.ConstantUtil;
@@ -33,6 +34,7 @@ public class PhotoServiceImpl implements PhotoService {
     private final TemplateEngine templateEngine;
 
     // 완성된 요청 id 및 imageUrl을 받아 저장
+    @ExeTimer
     @Override
     @Transactional
     public void uploadPhoto(Long photoRequestId, String imageUrl) {
@@ -54,7 +56,7 @@ public class PhotoServiceImpl implements PhotoService {
         EmailInfo emailInfo = EmailInfo.builder()
                 .email(photoRequest.getEmail())
                 .photoUrl(imageUrl)
-                .name(user.getUserName())
+                .name(user.getUserName()) // 지연 로딩을 사용하기 때문에 여기서 user.getName을 하는 순간에 Hibernate select
                 .framePageUrl("https://www.google.com/") // TODO : 프론트 분들 링크 관련 답변 오면 프레임 페이지 링크 관련 수정
                 .build();
 

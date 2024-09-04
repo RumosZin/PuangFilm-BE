@@ -2,6 +2,7 @@ package gdsc.cau.puangbe.photorequest.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gdsc.cau.puangbe.common.annotation.ExeTimer;
 import gdsc.cau.puangbe.common.enums.Gender;
 import gdsc.cau.puangbe.common.enums.RequestStatus;
 import gdsc.cau.puangbe.common.exception.BaseException;
@@ -121,6 +122,7 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
         return status.name();
     }
 
+    @ExeTimer
     @Override
     @Transactional(readOnly = true)
     public Long updateEmail(Long userId, String email) {
