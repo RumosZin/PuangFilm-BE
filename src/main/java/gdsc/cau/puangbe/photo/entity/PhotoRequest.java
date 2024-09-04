@@ -61,4 +61,9 @@ public class PhotoRequest {
         this.status = RequestStatus.FINISHED;
         this.updateDate = LocalDateTime.now();
     }
+
+    public void modifyEmail(String email) {
+        this.email = email;
+        this.updateDate = LocalDateTime.now();
+    }
 }
