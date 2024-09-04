@@ -43,6 +43,17 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
     @Transactional
     public Long createImage(CreateImageDto dto, Long userId){
         User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(ResponseCode.USER_NOT_FOUND));
+
+        // 가장 최신의 photo_request 조회
+        PhotoRequest latestRequest = photoRequestRepository
+                .findTopByUserIdOrderByCreateDateDesc(userId)
+                .orElseThrow(() -> new RuntimeException("No photo requests found for userId: " + userId));
+
+        // 상태 체크
+        if (latestRequest.getStatus() == RequestStatus.WAITING) {
+            return latestRequest.getId(); // 상태가 'waiting'이면 requestId 반환
+        }
+
         // PhotoRequest 생성
         PhotoRequest request = PhotoRequest.builder()
                 .user(user)
@@ -79,10 +90,6 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
             throw new PhotoRequestException(ResponseCode.JSON_PARSE_ERROR);
         }
 
-        // Redis에 userId 저장하고, userId로 requestId 추적할 수 있도록 함
-        redisTemplate.opsForSet().add(ConstantUtil.USER_ID_KEY, userId);
-        redisTemplate.opsForSet().add(userId.toString(), request.getId());
-        log.info("Redis 대기열 등록 완료: {}", userId);
         return request.getId();
     }
 
@@ -106,12 +113,6 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
     @Transactional(readOnly = true)
     public String getRequestStatus(Long userId){
         validateUser(userId);
-
-        // Redis에 userId가 존재하면 아직 처리 대기 중인 요청이므로 WAITING 반환
-        if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(ConstantUtil.USER_ID_KEY, userId))){
-            log.info("사용자의 요청 상태 조회, 현재 대기 중: {}", userId);
-            return RequestStatus.WAITING.name();
-        }
 
         RequestStatus status = photoRequestRepository.findTopByUserIdOrderByCreateDateDesc(userId)
                 .orElseThrow(() -> new BaseException(ResponseCode.PHOTO_REQUEST_NOT_FOUND))

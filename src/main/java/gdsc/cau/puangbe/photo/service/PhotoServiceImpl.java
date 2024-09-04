@@ -50,12 +50,7 @@ public class PhotoServiceImpl implements PhotoService {
         photoResultRepository.save(photoResult);
         log.info("결과 이미지 URL 업로드 완료: {}", imageUrl);
 
-        // Redis 대기열의 user 정보 삭제
-        redisTemplate.opsForSet().remove(ConstantUtil.USER_ID_KEY, user.getId());
-        redisTemplate.delete(user.getId().toString());
-        log.info("Redis 대기열에서 요청 삭제 : {}", user.getId());
-
-        // 이메일 발송
+        // 이메일 발송 - 나중에 분리할 것이므로 제외
         EmailInfo emailInfo = EmailInfo.builder()
                 .email(photoRequest.getEmail())
                 .photoUrl(imageUrl)
