@@ -131,12 +131,6 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
 
     @Override
     @Transactional
-    @Lock(LockModeType.OPTIMISTIC)
-    @Retryable(
-            retryFor = {ObjectOptimisticLockingFailureException.class},
-            maxAttempts = 1000,
-            backoff = @Backoff(100)
-    )
     public Long updateEmail(Long userId, String email) {
 
         // 가장 최근의 PhotoRequest 조회
@@ -146,7 +140,7 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
         photoRequest.modifyEmail(email);
         photoRequestRepository.save(photoRequest);
 
-        log.info("updateEmail - PhotoRequest version: {}", photoRequest.getVersion());
+        log.info("update email");
 
         return photoRequest.getId();
     }

@@ -42,12 +42,6 @@ public class PhotoServiceImpl implements PhotoService {
     // 완성된 요청 id 및 imageUrl을 받아 저장
     @Override
     @Transactional
-    @Lock(LockModeType.OPTIMISTIC)
-    @Retryable(
-            retryFor = {ObjectOptimisticLockingFailureException.class},
-            maxAttempts = 1000,
-            backoff = @Backoff(100)
-    )
     public void uploadPhoto(Long photoRequestId, String imageUrl) {
         // 예외처리
         PhotoRequest photoRequest = photoRequestRepository.findById(photoRequestId)
@@ -65,18 +59,18 @@ public class PhotoServiceImpl implements PhotoService {
         photoResult.update(imageUrl);
         photoResultRepository.save(photoResult);
 
-        log.info("uploadPhoto - PhotoRequest version: {}", photoRequest.getVersion());
+        log.info("upload photo");
 
 
         // 이메일 발송
-        EmailInfo emailInfo = EmailInfo.builder()
-                .email(photoRequest.getEmail())
-                .photoUrl(imageUrl)
-                .name(user.getUserName())
-                .framePageUrl("https://www.google.com/") // TODO : 프론트 분들 링크 관련 답변 오면 프레임 페이지 링크 관련 수정
-                .build();
-
-        sendEmail(emailInfo);
+//        EmailInfo emailInfo = EmailInfo.builder()
+//                .email(photoRequest.getEmail())
+//                .photoUrl(imageUrl)
+//                .name(user.getUserName())
+//                .framePageUrl("https://www.google.com/") // TODO : 프론트 분들 링크 관련 답변 오면 프레임 페이지 링크 관련 수정
+//                .build();
+//
+//        sendEmail(emailInfo);
     }
 
     // 특정 요청의 imageUrl 조회
