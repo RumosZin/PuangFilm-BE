@@ -11,13 +11,15 @@ public enum ResponseCode {
 
     // 400 Bad Request
     BAD_REQUEST(HttpStatus.BAD_REQUEST, false, "잘못된 요청입니다."),
+    USER_NO_AUTH_HEADER(HttpStatus.BAD_REQUEST, false, "Authorization 헤더가 존재하지 않습니다."),
+    USER_INVALID_TOKEN(HttpStatus.BAD_REQUEST, false, "토큰이 형식이 올바르지 않습니다."),
+    USER_INVALID_KAKAO_CODE(HttpStatus.BAD_REQUEST, false, "인가 코드가 유효하지 않습니다."),
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, false, "인증되지 않은 사용자입니다."),
 
     // 403 Forbidden
     FORBIDDEN(HttpStatus.FORBIDDEN, false, "권한이 없습니다."),
-    REFRESH_TOKEN_EXPIRED(HttpStatus.FORBIDDEN, false, "리프레시 토큰이 만료되었습니다."),
 
     // 404 Not Found
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, false, "사용자를 찾을 수 없습니다."),
@@ -32,10 +34,14 @@ public enum ResponseCode {
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, false, "이미 존재하는 사용자입니다."),
     URL_ALREADY_UPLOADED(HttpStatus.CONFLICT, false, "이미 url이 업로드 되었습니다."),
 
+    // 429 Too Many Requests
+    RATE_LIMITER_TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, false, "호출 허용량 초과입니다. 잠시 후 다시 시도해 주세요."),
+
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, false, "서버에 오류가 발생하였습니다."),
     JSON_PARSE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, false, "JSON 파싱 오류가 발생하였습니다."),
     EMAIL_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, false, "이메일 발송에 오류가 발생하였습니다."),
+    RATE_LIMITER_POLICY_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, false, "정의되지 않은 정책입니다."),
 
     // 200 OK
     USER_LOGIN_SUCCESS(HttpStatus.OK, true, "사용자 로그인 성공"),
