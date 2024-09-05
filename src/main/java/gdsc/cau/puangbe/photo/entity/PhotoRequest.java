@@ -46,6 +46,9 @@ public class PhotoRequest {
     @OneToMany(mappedBy = "request", cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
     private List<PhotoOrigin> photoUrls = new ArrayList<>();
 
+    @Version
+    private Long version;
+
     @Builder
     public PhotoRequest(User user, Gender gender, List<String> urls, String email) {
         this.user = user;
@@ -65,5 +68,14 @@ public class PhotoRequest {
     public void modifyEmail(String email) {
         this.email = email;
         this.updateDate = LocalDateTime.now();
+    }
+
+    @Override
+    public String toString() {
+        return "PhotoRequest{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", version=" + version +
+                '}';
     }
 }

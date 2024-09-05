@@ -26,6 +26,7 @@ public enum ResponseCode {
 
     // 405 Method Not Allowed
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, false, "허용되지 않은 메서드입니다."),
+    OPTIMISTIC_LOCK_FAILED(HttpStatus.METHOD_NOT_ALLOWED, false, "낙관적 락에 의해 요청이 취소되었습니다."),
 
     // 409 Conflict
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, false, "이미 존재하는 사용자입니다."),

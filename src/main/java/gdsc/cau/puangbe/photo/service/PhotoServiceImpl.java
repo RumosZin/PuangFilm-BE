@@ -12,8 +12,10 @@ import gdsc.cau.puangbe.photo.repository.PhotoResultRepository;
 import gdsc.cau.puangbe.photo.repository.PhotoRequestRepository;
 import gdsc.cau.puangbe.user.entity.User;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -36,6 +38,7 @@ public class PhotoServiceImpl implements PhotoService {
     // 완성된 요청 id 및 imageUrl을 받아 저장
     @Override
     @Transactional
+    @Lock(LockModeType.OPTIMISTIC)
     public void uploadPhoto(Long photoRequestId, String imageUrl) {
         // 예외처리
         PhotoRequest photoRequest = photoRequestRepository.findById(photoRequestId)
@@ -52,7 +55,9 @@ public class PhotoServiceImpl implements PhotoService {
         photoRequestRepository.save(photoRequest);
         photoResult.update(imageUrl);
         photoResultRepository.save(photoResult);
-        log.info("결과 이미지 URL 업로드 완료: {}", imageUrl);
+
+        log.info("uploadPhoto - PhotoRequest version: {}", photoRequest.getVersion());
+
 
         // 이메일 발송
         EmailInfo emailInfo = EmailInfo.builder()

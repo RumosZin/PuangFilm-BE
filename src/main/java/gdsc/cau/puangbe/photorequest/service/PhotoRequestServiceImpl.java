@@ -17,8 +17,10 @@ import gdsc.cau.puangbe.photorequest.dto.CreateImageDto;
 import gdsc.cau.puangbe.photorequest.dto.ImageInfo;
 import gdsc.cau.puangbe.user.entity.User;
 import gdsc.cau.puangbe.user.repository.UserRepository;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,13 +126,17 @@ public class PhotoRequestServiceImpl implements PhotoRequestService {
 
     @Override
     @Transactional
+    @Lock(LockModeType.OPTIMISTIC)
     public Long updateEmail(Long userId, String email) {
+
         // 가장 최근의 PhotoRequest 조회
         PhotoRequest photoRequest = photoRequestRepository.findTopByUserIdOrderByCreateDateDesc(userId)
                 .orElseThrow(() -> new BaseException(ResponseCode.PHOTO_REQUEST_NOT_FOUND));
 
         photoRequest.modifyEmail(email);
         photoRequestRepository.save(photoRequest);
+
+        log.info("updateEmail - PhotoRequest version: {}", photoRequest.getVersion());
 
         return photoRequest.getId();
     }
