@@ -1,6 +1,7 @@
 package gdsc.cau.puangbe.photo.service;
 
 import gdsc.cau.puangbe.common.annotation.ExeTimer;
+import gdsc.cau.puangbe.common.annotation.Retry;
 import gdsc.cau.puangbe.common.enums.RequestStatus;
 import gdsc.cau.puangbe.common.exception.BaseException;
 import gdsc.cau.puangbe.common.util.ConstantUtil;
@@ -39,6 +40,7 @@ public class PhotoServiceImpl implements PhotoService {
     @Override
     @Transactional
     @Lock(LockModeType.OPTIMISTIC)
+    @Retry
     public void uploadPhoto(Long photoRequestId, String imageUrl) {
         // 예외처리
         PhotoRequest photoRequest = photoRequestRepository.findById(photoRequestId)
