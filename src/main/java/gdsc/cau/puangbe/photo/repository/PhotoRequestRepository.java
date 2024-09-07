@@ -13,5 +13,5 @@ public interface PhotoRequestRepository extends JpaRepository<PhotoRequest, Long
     Optional<PhotoRequest> findById(Long photoRequestId);
     
     // 특정 유저의 최근에 만들어진 PhotoRequest 조회
-    Optional<PhotoRequest> findTopByUserIdOrderByCreateDateDesc(Long photoRequestId);
+    Optional<PhotoRequest> findTopByUserIdOrderByCreateDateDesc(Long userId);
 }
